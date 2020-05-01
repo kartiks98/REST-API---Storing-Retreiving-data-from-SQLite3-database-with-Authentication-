@@ -7,9 +7,19 @@ Created on Sat Apr 25 17:49:51 2020
 
 from flask_restful import Resource,reqparse
 from flask_jwt import jwt_required
-import sqlite3
+from db import db
 
-class Item(Resource):
+class Item(Resource,db):
+    __tablename__='items'
+    
+    id=db.Column(db.Integer,primary_key=True)
+    name=db.Column(db.String(80))
+    price=db.Column(db.Float(80,precision=2))
+    
+    def __init__(self,name,price):
+        self.name=name
+        self.price=price
+    
     parser=reqparse.RequestParser()
     parser.add_argument('price', 
                             type=float,
@@ -18,26 +28,20 @@ class Item(Resource):
     
     def post(self, name):
         data=Item.parser.parse_args()
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        select=cursor.execute('select * from items where name=?',(name,))
-        row=select.fetchone()
-        if row:
+        check=db.query.filter_by(name=name)
+        if check:
             return {f'{name}':'already exists'},400
-        cursor.execute('insert into items values(?,?)',(name,data['price']))
-        connection.commit()
-        connection.close()
+        item=Item(name,data['price'])
+        db.session.add(item)
+        db.commit()
         return {'name':name,'price':data['price']},201
         
     
     @jwt_required()
     def get(self, name):
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        select=cursor.execute('select * from items where name=?',(name,))
-        row=select.fetchone()
-        if row:
-            return {'name':row[0],'price':row[1]}
+        check=db.query.filter_by(name=name).first()
+        if check:
+            return {'name':check.name,'price':check.price}
         return {'item':None},404
     
     def put(self, name):
@@ -49,46 +53,33 @@ class Item(Resource):
         #                     help=f'{"price"} is a required field')
         
         data=Item.parser.parse_args()
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        select=cursor.execute('select * from items where name=?',(name,))
-        row=select.fetchone()
-        updated_item={'name':name,'price':data['price']}
-        if row:
-            cursor.execute('update items set price=? where name=?',
-                                  (updated_item['price'],updated_item['name']))
-            connection.commit()
-            connection.close()
-            return updated_item
-        cursor.execute('insert into items values(?,?)',(name,data['price']))
-        connection.commit()
-        connection.close()
-        return updated_item,201
+        check=db.query.filter_by(name=name)
+        if check:
+            check.price=data['price']
+            db.session.add(check)
+            db.commit()
+            return {'name':check.name,'price':check.price}
+        item=Item(name,data['price'])
+        db.session.add(item)
+        db.commit()
+        return {'name':name,'price':data['price']},201
     
     def delete(self, name):
         # data=Item.parser.parse_args()
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        select=cursor.execute('select * from items where name=?',(name,))
-        row=select.fetchone()
-        if row:
-            cursor.execute('delete from items where name=?',(name,))
-            connection.commit()
-            connection.close()
+        
+        check=db.query.filter_by(name=name)
+        if check:
+            db.session.delete(check)
+            db.commit()
             return {name:'deleted'}
-        connection.commit()
-        connection.close()
         return {'item':None},404
     
-class Items(Resource):
+class Items(Resource,db):
     def get(self):
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        select_all=cursor.execute('select * from items')
-        rows=select_all.fetchall()
         rows_l=[]
+        rows=db.query.all()
         for row in rows:
-            rows_l.append({'name':row[0],'price':row[1]})
+            rows_l.append({'name':row.name,'price':row.price})
         return {'items':rows_l}
     
     

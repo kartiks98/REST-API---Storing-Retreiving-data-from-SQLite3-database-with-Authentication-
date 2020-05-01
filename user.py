@@ -6,44 +6,25 @@ Created on Thu Apr 23 22:42:57 2020
 """
 
 
-import sqlite3
 from flask_restful import Resource,reqparse
+from db import db
 
-class User():
-    def __init__(self,_id,username,password):
-        self.id=_id
+class User(db):
+    id=db.Column(db.Integer,primary_key=True)
+    username=db.Column(db.String(80))
+    password=db.Column(db.String(80))
+    
+    def __init__(self,username,password):
         self.username=username
         self.password=password
         
-    # @classmethod
-    def find_by_username(self,username):
-        connection = sqlite3.connect('MyData.db')
-        cursor = connection.cursor()
+    @classmethod
+    def find_by_username(cls,username):
+       return cls.query.filter_by(username=username).first()
         
-        select_query='select * from users where username=?'
-        result=cursor.execute(select_query,[username,])
-        row=result.fetchone()
-        
-        if row:
-            user=User(*row)
-            return user
-        else:
-            return None
-        
-    # @classmethod
-    def find_by_id(self,_id):
-        connection = sqlite3.connect('MyData.db')
-        cursor = connection.cursor()
-        
-        select_query='select * from users where id=?'
-        result=cursor.execute(select_query,[_id,])
-        row=result.fetchone()
-        
-        if row:
-            user=User(*row)
-            return user
-        else:
-            return None
+    @classmethod
+    def find_by_id(cls,_id):
+        return cls.query.filter_by(id=_id).first()
         
 class UserReg(Resource):
     parser=reqparse.RequestParser()
@@ -60,37 +41,10 @@ class UserReg(Resource):
         # global data
         data=UserReg.parser.parse_args()
         
-        if User.find_by_username(None,data['username']):
+        if User.find_by_username(data['username']):
             return {f'{data["username"]}':'already exists'}, 400
-        
-        
-        connection=sqlite3.connect('MyData.db')
-        cursor=connection.cursor()
-        
-        # select_query='select * from users'
-        # result=cursor.execute(select_query)
-        # rows=result.fetchall()
-        
-        # for row in rows:
-        #     if row[1] == data['username']:
-        #         return {f'{data["username"]}':'already exists'}, 400
-        
-        
-        # """The below statement will work but not recommended beause of SQL injection attack."""
-        
-        # query=f'insert into users values(null,"{data["username"]}","{data["password"]}")'
-        # cursor.execute(query)
-        
-        
-        # """The below statement will not work"""
-        
-        # query=f'insert into users values(null,{data["username"]},{data["password"]})'
-        # cursor.execute(query)        
-        
-        query='insert into users values(null,?,?)'
-        cursor.execute(query,(data['username'],data['password']))
-        
-        connection.commit()
-        connection.close()
+        user=User(**data)
+        db.session.add(user)
+        db.commit()
     
         return {f'{data["username"]}':'added successfully'}, 201

@@ -53,12 +53,12 @@ something so as to vrify JWT that the function is returning something else it
 will give you an error if you did not return anything."""
 
 def authenticate(username,password):
-    user=User.find_by_username(None,username)
+    user=User.find_by_username(username)
     if user and user.password==password:            
         return user
 
 def identity(payload):
-    userid=User.find_by_id(None,payload['identity'])
+    userid=User.find_by_id(payload['identity'])
     return userid
     # return 'kuchh bhi'
 
