@@ -9,7 +9,9 @@ Created on Thu Apr 23 22:42:57 2020
 from flask_restful import Resource,reqparse
 from db import db
 
-class User(db):
+class User(db.Model):
+    __tablename__='users'
+    
     id=db.Column(db.Integer,primary_key=True)
     username=db.Column(db.String(80))
     password=db.Column(db.String(80))
@@ -45,6 +47,6 @@ class UserReg(Resource):
             return {f'{data["username"]}':'already exists'}, 400
         user=User(**data)
         db.session.add(user)
-        db.commit()
+        db.session.commit()
     
         return {f'{data["username"]}':'added successfully'}, 201

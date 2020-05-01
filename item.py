@@ -9,7 +9,7 @@ from flask_restful import Resource,reqparse
 from flask_jwt import jwt_required
 from db import db
 
-class Item(Resource,db):
+class Item(Resource,db.Model):
     __tablename__='items'
     
     id=db.Column(db.Integer,primary_key=True)
@@ -33,7 +33,7 @@ class Item(Resource,db):
             return {f'{name}':'already exists'},400
         item=Item(name,data['price'])
         db.session.add(item)
-        db.commit()
+        db.session.commit()
         return {'name':name,'price':data['price']},201
         
     
@@ -57,11 +57,11 @@ class Item(Resource,db):
         if check:
             check.price=data['price']
             db.session.add(check)
-            db.commit()
+            db.session.commit()
             return {'name':check.name,'price':check.price}
         item=Item(name,data['price'])
         db.session.add(item)
-        db.commit()
+        db.session.commit()
         return {'name':name,'price':data['price']},201
     
     def delete(self, name):
@@ -70,7 +70,7 @@ class Item(Resource,db):
         check=db.query.filter_by(name=name)
         if check:
             db.session.delete(check)
-            db.commit()
+            db.session.commit()
             return {name:'deleted'}
         return {'item':None},404
     
