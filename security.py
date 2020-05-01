@@ -36,27 +36,31 @@ from user import User
 #     }
 #     ]
 
-users=[
-        User(1001,'kartik','abcd')   #id can be string also
-        ]
+# users=[
+#         User(1001,'kartik','abcd')   #id can be string also
+#         ]
 
-username_mapping={u.username : u for u in users}
+# username_mapping={u.username : u for u in users}
 
-userid_mapping={u.id : u for u in users}
+# userid_mapping={u.id : u for u in users}
 
-# def authenticate(userna,passw):           #this will also run with no error.
-#     user=username_mapping.get(userna,None)
-#     if user and user.password==passw:
-#         return user
+"""JWT will only search for the id attribute in the returned value of 
+authenticate function & remembers it for authentication later on when 
+identity function is called.
+
+jWT does not care of identity function of what it returns but should return 
+something so as to vrify JWT that the function is returning something else it 
+will give you an error if you did not return anything."""
 
 def authenticate(username,password):
-    user=username_mapping.get(username,None)
-    if user and user.password==password:
+    user=User.find_by_username(None,username)
+    if user and user.password==password:            
         return user
 
 def identity(payload):
-    userid=userid_mapping.get(payload['identity'],None)
+    userid=User.find_by_id(None,payload['identity'])
     return userid
+    # return 'kuchh bhi'
 
 
     
