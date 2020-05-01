@@ -1,4 +1,3 @@
-i
 # REST API - Storing & Retreiving data from SQLite3 database (with Authentication)
 An API of my unique style that is far easy to understand than other APIs that can be used to interact with the database quite easily and efficiently with the use of Authentication for Signup & Login.
 
