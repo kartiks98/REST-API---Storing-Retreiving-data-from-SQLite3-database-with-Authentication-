@@ -3,7 +3,6 @@ from db import db
 
 class UserModel(db.Model):
     __tablename__ = 'users'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
