@@ -5,7 +5,7 @@ Created on Thu Apr 23 22:24:53 2020
 @author: Kartik Saini
 """
 
-from user import User
+from models.user import UserModel
 # from werkzeug,security import safe_str_cmp
 
 # users=[
@@ -53,12 +53,12 @@ something so as to vrify JWT that the function is returning something else it
 will give you an error if you did not return anything."""
 
 def authenticate(username,password):
-    user=User.find_by_username(username)
+    user=UserModel.find_by_username(username)
     if user and user.password==password:            
         return user
 
 def identity(payload):
-    userid=User.find_by_id(payload['identity'])
+    userid=UserModel.find_by_id(payload['identity'])
     return userid
     # return 'kuchh bhi'
 
