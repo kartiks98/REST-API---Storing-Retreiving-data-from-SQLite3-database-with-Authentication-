@@ -11,10 +11,10 @@ from db import db
 
 class Item(Resource,db.Model):
     __tablename__='items'
-    
+    __table_args__ = {'extend_existing': True}
     id=db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(80))
-    price=db.Column(db.Float(80,precision=2))
+    price=db.Column(db.Float(precision=2))
     
     def __init__(self,name,price):
         self.name=name
